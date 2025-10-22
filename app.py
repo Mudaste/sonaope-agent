@@ -3,13 +3,10 @@ import streamlit as st
 import pandas as pd
 import random
 
-# Laadime sõnad Exceli failist
-df = pd.read_excel("Sonad.xlsx", sheet_name="Leht1", engine="openpyxl")
-
-# Eemaldame tühjad read ja valime ainult vajalikud veerud
-words = df.iloc[3:, [5, 6]].dropna()
+# Laadime sõnad Exceli failist, alates 2. reast
+words = pd.read_excel("Sonad.xlsx", sheet_name="Leht1", skiprows=2, usecols=["Unnamed: 5", "Unnamed: 6"], engine="openpyxl")
 words.columns = ['Spanish', 'Estonian']
-words = words.reset_index(drop=True)
+words = words.dropna().reset_index(drop=True)
 
 # Funktsioon uue sõna lisamiseks
 def add_new_word(spanish, estonian):
