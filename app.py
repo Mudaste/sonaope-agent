@@ -20,6 +20,21 @@ def add_new_word(spanish, estonian):
     df_new = pd.DataFrame(words)
     df_new.to_excel("Sonad.xlsx", sheet_name="Leht1", index=False, engine="openpyxl")
 
+# Funktsioon vastuse kontrollimiseks
+def check_answer():
+    user_answer = st.session_state.user_answer.strip().lower()
+    correct_answer = st.session_state.correct_answer.strip().lower()
+    if user_answer == correct_answer:
+        st.session_state.feedback = f"✅ Õige vastus!"
+    else:
+        st.session_state.feedback = f"❌ Vale vastus. Õige on: {st.session_state.correct_answer}"
+    # Genereeri uus küsimus
+    new_index = random.choice(words.index)
+    ask_in_spanish = random.choice([True, False])
+    st.session_state.current_word = new_index
+    st.session_state.ask_in_spanish = ask_in_spanish
+    st.session_state.user_answer = ""
+
 # Streamlit UI
 st.title("Hispaania keele sõnade õppimise äpp")
 
@@ -27,6 +42,8 @@ st.title("Hispaania keele sõnade õppimise äpp")
 if 'current_word' not in st.session_state:
     st.session_state.current_word = random.choice(words.index)
     st.session_state.ask_in_spanish = random.choice([True, False])
+    st.session_state.feedback = ""
+    st.session_state.user_answer = ""
 
 current = st.session_state.current_word
 ask_in_spanish = st.session_state.ask_in_spanish
@@ -40,22 +57,18 @@ else:
     correct_answer = words.loc[current, 'Spanish']
     st.write(f"Kuidas on eesti keeles: **{question}** hispaania keeles?")
 
-user_answer = st.text_input("Sinu vastus")
+st.session_state.correct_answer = correct_answer
 
-if st.button("Kontrolli vastust"):
-    if user_answer.strip().lower() == correct_answer.strip().lower():
-        st.success("Õige vastus!")
-    else:
-        st.error(f"Vale vastus. Õige on: {correct_answer}")
-    # Uus küsimus
-    st.session_state.current_word = random.choice(words.index)
-    st.session_state.ask_in_spanish = random.choice([True, False])
+st.text_input("Sinu vastus", key="user_answer", on_change=check_answer)
+
+if st.session_state.feedback:
+    st.write(st.session_state.feedback)
 
 # Uue sõna lisamine
 st.write("---")
 st.subheader("Lisa uus sõna")
-new_spanish = st.text_input("Hispaania keeles")
-new_estonian = st.text_input("Eesti keeles")
+new_spanish = st.text_input("Hispaania keeles", key="new_spanish")
+new_estonian = st.text_input("Eesti keeles", key="new_estonian")
 
 if st.button("Lisa sõna"):
     if new_spanish and new_estonian:
